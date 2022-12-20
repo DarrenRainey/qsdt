@@ -14,9 +14,7 @@ $menu.Add($i,($printers[$i-1].name))}
 
 $clearPrinter = $printers[$ans-1].name
 echo Clearing $clearPrinter
-#(GWMI -Class Win32_Printer -ComputerName $remotePC -Filter "name LIKE '$selection'").cancelalljobs()
 $pf =  "`"name LIKE '%$clearPrinter%'`""
-#echo $pf
 WMIC.exe /node:$remotePCiP printjob where $pf DELETE
 
 if($menu.count -eq 0){
@@ -25,9 +23,8 @@ if($menu.count -eq 0){
 }
 
 echo "Restarting Services"
-#Get-Service -ComputerName $remotePC -Name spooler | Restart-Service -Force
 .\PsService.exe \\$remotePC -u admin\drainey restart spooler
 
 echo "All print jobs should be cleared / Print spooler restarted"
-Set-Clipboard "Print queue cleared for $selection"
+Set-Clipboard "Print queue cleared for $clearPrinter"
 }
