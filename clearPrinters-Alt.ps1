@@ -1,5 +1,7 @@
 # Alternative version of clearPrinters using WMIC and PSService to restart services
 # For when PS Remoting is disabled.
+# Note currently a small visual bug where the first printer / printer 0 may not display if there is only 1 printer in an error/non zero state
+# this will be fixed at a later stage but does not affect functionality.
 function clearPrinter($remotePC){
 $printers = GWMI -Class Win32_Printer -ComputerName $remotePC | Where-Object {$_.PrinterState -ne 0 -and $_.PrinterState -ne 128}
 $remotePCiP = [System.Net.Dns]::GetHostAddresses($remotePC).IPAddressToString
@@ -17,13 +19,14 @@ echo Clearing $clearPrinter
 $pf =  "`"name LIKE '%$clearPrinter%'`""
 WMIC.exe /node:$remotePCiP printjob where $pf DELETE
 
-if($menu.count -eq 0){
+if($count.count -eq 0){
 	echo "No printers in an error state"
 	break;
 }
 
 echo "Restarting Services"
-.\PsService.exe \\$remotePC -u admin\drainey restart spooler
+.\PsExec.exe \\$remotePC net stop spooler /y
+.\PsExec.exe \\$remotePC net start spooler /y
 
 echo "All print jobs should be cleared / Print spooler restarted"
 Set-Clipboard "Print queue cleared for $clearPrinter"
